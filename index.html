@@ -933,7 +933,7 @@ function buildReport(){
     }</div>`;
 
   // リール動画
-  if(m.rlMaxViews > 0 || m.rlMaxReach > 0){
+  if(m.rlMaxViews > 0 || m.rlMaxReach > 0 || m.rlCount > 0){
     const rlMaxER = m.rlMaxReach > 0 ? pct((m.rlMaxLikes + m.rlMaxComments + m.rlMaxShares + m.rlMaxSaves) / m.rlMaxReach * 100) : '—';
     html += subHead('リール動画');
     html += `<div style="background:#F8F8F8;border-radius:9px;padding:12px 14px;margin-bottom:8px">
@@ -1137,7 +1137,7 @@ function buildClaudePrompt(){
     `ライブ：${v(int('vt-live'))}`,
     '',
     '■ リール動画',
-    `最多閲覧数：${v(m.rlMaxViews)} / 最少：${rlCnt >= 2 ? v(m.rlMinViews) : '—'} / 平均：${!isNaN(m.rlAvgViews) ? m.rlAvgViews.toLocaleString('ja-JP') : '—'}`,
+    `最多閲覧数：${v(m.rlMaxViews)} / 最少：${m.rlMinViews > 0 ? v(m.rlMinViews) : '—'} / 平均：${!isNaN(m.rlAvgViews) ? m.rlAvgViews.toLocaleString('ja-JP') : '—'}`,
     `30日間投稿本数：${rlCnt > 0 ? rlCnt+'本' : '—'} / 平均視聴時間：${num('rl-avg-watch') > 0 ? num('rl-avg-watch')+'秒' : '—'}`,
     '',
     '■ 投稿（フィード）',
