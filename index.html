@@ -92,11 +92,11 @@ textarea:focus{outline:none;border-color:var(--blue)}
 .reel-num.gray{background:var(--muted)}
 
 /* ── Score ring ──────────────────────────────── */
-.score-wrap{text-align:center;padding:12px 20px 12px}
-.ring-svg{width:120px;height:120px;display:block;margin:0 auto}
+.score-wrap{display:flex;flex-direction:column;align-items:center;text-align:center;padding:12px 20px 12px}
+.ring-svg{width:120px;height:120px;display:block;flex-shrink:0}
 .ring-track{fill:none;stroke:#EFEFEF;stroke-width:12}
 .ring-fill{fill:none;stroke-width:12;stroke-linecap:round;transition:stroke-dashoffset .9s ease}
-.ring-center{position:relative;margin-top:-70px;text-align:center}
+.ring-center{position:static;margin-top:10px;text-align:center}
 .ring-num{font-size:34px;font-weight:800;line-height:1;display:block}
 .ring-lbl{font-size:11px;color:var(--sub)}
 .score-grade{margin-top:10px;font-size:15px;font-weight:700}
