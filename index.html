@@ -933,13 +933,15 @@ function buildReport(){
     }</div>`;
 
   // リール動画
-  if(m.rlMaxViews > 0 || m.rlMaxReach > 0 || m.rlCount > 0){
+  if(m.rlMaxViews > 0 || m.rlMaxReach > 0 || m.rlCount > 0 || m.rlMinViews > 0){
     const rlMaxER = m.rlMaxReach > 0 ? pct((m.rlMaxLikes + m.rlMaxComments + m.rlMaxShares + m.rlMaxSaves) / m.rlMaxReach * 100) : '—';
     html += subHead('リール動画');
-    html += `<div style="background:#F8F8F8;border-radius:9px;padding:12px 14px;margin-bottom:8px">
-      <div style="font-size:11px;color:var(--sub);margin-bottom:7px">最多閲覧数の投稿</div>
-      ${statGrid(4,[['閲覧数',fmt(m.rlMaxViews)],['リーチ',fmt(m.rlMaxReach)],['いいね',fmt(m.rlMaxLikes)],['コメント',fmt(m.rlMaxComments)],['シェア',fmt(m.rlMaxShares)],['保存',fmt(m.rlMaxSaves)],['ER',rlMaxER,'var(--ig-rose)']])}
-    </div>`;
+    if(m.rlMaxViews > 0 || m.rlMaxReach > 0){
+      html += `<div style="background:#F8F8F8;border-radius:9px;padding:12px 14px;margin-bottom:8px">
+        <div style="font-size:11px;color:var(--sub);margin-bottom:7px">最多閲覧数の投稿</div>
+        ${statGrid(4,[['閲覧数',fmt(m.rlMaxViews)],['リーチ',fmt(m.rlMaxReach)],['いいね',fmt(m.rlMaxLikes)],['コメント',fmt(m.rlMaxComments)],['シェア',fmt(m.rlMaxShares)],['保存',fmt(m.rlMaxSaves)],['ER',rlMaxER,'var(--ig-rose)']])}
+      </div>`;
+    }
     if(m.rlMinViews > 0){
       html += `<div style="background:#F8F8F8;border-radius:9px;padding:12px 14px;margin-bottom:8px">
         <div style="font-size:11px;color:var(--sub);margin-bottom:7px">最少閲覧数の投稿</div>
@@ -949,7 +951,7 @@ function buildReport(){
     html += `<div style="font-size:13px;display:flex;gap:20px;flex-wrap:wrap;margin-bottom:4px">
       <span><span style="color:var(--sub)">30日間本数：</span><strong>${m.rlCount>0?m.rlCount+'本':'—'}</strong></span>
       <span><span style="color:var(--sub)">平均閲覧数：</span><strong>${!isNaN(m.rlAvgViews)?fmt(m.rlAvgViews):'—'}</strong></span>
-      <span><span style="color:var(--sub)">参考ER：</span><strong style="color:var(--ig-rose)">${rlMaxER}</strong></span>
+      ${(m.rlMaxViews > 0 || m.rlMaxReach > 0) ? `<span><span style="color:var(--sub)">参考ER：</span><strong style="color:var(--ig-rose)">${rlMaxER}</strong></span>` : ''}
     </div>`;
   }
 
