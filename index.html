@@ -755,11 +755,6 @@ function calcReelAuto(){
   const maxS  = int('rl-max-saves');
   const cnt   = int('rl-count');
 
-  const cardMax = $('rl-card-max');
-  const cardMin = $('rl-card-min');
-  if(cardMax) cardMax.style.display = cnt >= 1 ? '' : 'none';
-  if(cardMin) cardMin.style.display = cnt >= 2 ? '' : 'none';
-
   if(cnt === 1 && maxV > 0){
     $('rl-avg-views').value = maxV.toLocaleString('ja-JP');
   } else if(cnt >= 2 && maxV > 0 && minV > 0){
@@ -774,11 +769,6 @@ function calcReelAuto(){
 }
 
 function calcPostAuto(){
-  const cnt = int('post-count');
-  const cardMax = $('post-card-max');
-  const cardMin = $('post-card-min');
-  if(cardMax) cardMax.style.display = cnt >= 1 ? '' : 'none';
-  if(cardMin) cardMin.style.display = cnt >= 2 ? '' : 'none';
 }
 
 function calcStoryAuto(){
