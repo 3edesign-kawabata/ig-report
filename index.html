@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instagram インサイト分析レポート</title>
+<link rel="icon" href="https://3e-design.com/wp-content/uploads/2026/05/cropped-1a8187b726ab5be807451a17ece69458-32x32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="https://3e-design.com/wp-content/uploads/2026/05/cropped-1a8187b726ab5be807451a17ece69458-180x180.png">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --ig-blue:#405DE6;--ig-purple:#833AB4;--ig-pink:#C13584;
+  --ig-rose:#E1306C;--ig-orange:#F77737;--ig-yellow:#FCAF45;
+  --bg:#FAFAFA;--card:#FFFFFF;--border:#DBDBDB;
+  --text:#262626;--sub:#737373;--muted:#C7C7C7;
+  --blue:#0095F6;--green:#22C55E;--amber:#F59E0B;--red:#EF4444;
+}
+
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Hiragino Sans","Yu Gothic UI",sans-serif;
+  background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;
+}
+
+/* ── Header ─────────────────────────────────── */
+.hd{
+  background:linear-gradient(115deg,var(--ig-blue),var(--ig-purple) 35%,var(--ig-rose) 65%,var(--ig-orange));
+  padding:20px 20px 16px;color:#fff;
+}
+.hd h1{font-size:18px;font-weight:700;letter-spacing:-.3px;margin-bottom:4px}
+.hd .period{font-size:12px;opacity:.88}
+
+/* ── Tabs ────────────────────────────────────── */
+.tabs{
+  background:#fff;border-bottom:1px solid var(--border);
+  display:flex;position:sticky;top:0;z-index:50;overflow-x:auto;
+}
+.tab-btn{
+  flex:1;min-width:70px;padding:13px 8px;background:none;border:none;
+  border-bottom:2px solid transparent;cursor:pointer;
+  font-size:13px;font-weight:500;color:var(--sub);white-space:nowrap;
+  transition:color .15s,border-color .15s;
+}
+.tab-btn.on{color:var(--text);border-bottom-color:var(--text);font-weight:700}
+
+/* ── Content ─────────────────────────────────── */
+.pane{display:none}
+.pane.on{display:block}
+.wrap{max-width:780px;margin:0 auto;padding:20px 16px 60px}
+
+/* ── Section card ────────────────────────────── */
+.sec{background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:14px}
+.sec-ttl{font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px}
+
+/* ── Grid ────────────────────────────────────── */
+.g1{display:grid;grid-template-columns:1fr;gap:12px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+
+/* ── Form elements ───────────────────────────── */
+.fg{display:flex;flex-direction:column;gap:5px}
+.lbl{font-size:12px;font-weight:600;color:var(--text)}
+.lbl span{font-weight:400;color:var(--sub)}
+input[type=text],input[type=number],input[type=date],select{
+  height:42px;padding:0 11px;border:1px solid var(--border);border-radius:8px;
+  font-size:14px;color:var(--text);background:#fff;width:100%;
+  -webkit-appearance:none;appearance:none;transition:border-color .15s;
+}
+input[type=text]:focus,input[type=number]:focus,input[type=date]:focus,select:focus{
+  outline:none;border-color:var(--blue);
+}
+textarea{
+  padding:11px;border:1px solid var(--border);border-radius:8px;
+  font-size:14px;color:var(--text);background:#fff;width:100%;
+  resize:vertical;min-height:88px;line-height:1.6;
+  font-family:inherit;transition:border-color .15s;
+}
+textarea:focus{outline:none;border-color:var(--blue)}
+.hint{font-size:11px;color:var(--sub)}
+.calc-field{background:#F5F5F5!important;color:var(--sub)!important;cursor:default}
+
+/* ── Reel card ───────────────────────────────── */
+.reel-card{background:#F8F8F8;border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px}
+.reel-hd{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.reel-num{
+  width:26px;height:26px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--ig-purple),var(--ig-rose));
+  color:#fff;font-size:13px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+}
+.reel-num.gray{background:var(--muted)}
+
+/* ── Score ring ──────────────────────────────── */
+.score-wrap{text-align:center;padding:28px 20px 20px}
+.ring-svg{width:150px;height:150px;display:block;margin:0 auto}
+.ring-track{fill:none;stroke:#EFEFEF;stroke-width:12}
+.ring-fill{fill:none;stroke-width:12;stroke-linecap:round;transition:stroke-dashoffset .9s ease}
+.ring-center{position:relative;margin-top:-83px;text-align:center}
+.ring-num{font-size:34px;font-weight:800;line-height:1;display:block}
+.ring-lbl{font-size:11px;color:var(--sub)}
+.score-grade{margin-top:10px;font-size:15px;font-weight:700}
+.score-note{font-size:12px;color:var(--sub);margin-top:4px}
+
+/* ── KPI grid ────────────────────────────────── */
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.kpi{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.kpi-ico{font-size:20px;margin-bottom:5px}
+.kpi-lbl{font-size:10px;color:var(--sub);margin-bottom:3px;line-height:1.3}
+.kpi-val{font-size:18px;font-weight:800}
+.kpi-bm{font-size:10px;color:var(--muted);margin-top:2px}
+.kpi-val.g{color:var(--green)}.kpi-val.a{color:var(--amber)}.kpi-val.r{color:var(--red)}
+
+/* ── Data rows ───────────────────────────────── */
+.drow{display:flex;justify-content:space-between;align-items:center;
+  padding:8px 0;border-bottom:1px solid #F3F3F3}
+.drow:last-child{border-bottom:none}
+.drow-lbl{font-size:12px;color:var(--sub)}
+.drow-val{font-size:13px;font-weight:700}
+
+/* ── AI comment ──────────────────────────────── */
+.ai-box{
+  background:#F0F7FF;border:1px solid #BFDBFE;border-radius:10px;
+  padding:16px;font-size:13px;line-height:1.8;white-space:pre-wrap;
+  min-height:80px;color:var(--text);
+}
+.ai-placeholder{color:var(--sub);font-style:italic}
+
+/* ── Buttons ─────────────────────────────────── */
+.btn{
+  height:42px;padding:0 18px;border:none;border-radius:8px;cursor:pointer;
+  font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:7px;
+  transition:opacity .15s;
+}
+.btn:hover{opacity:.88}.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-grad{background:linear-gradient(90deg,var(--ig-purple),var(--ig-rose));color:#fff}
+.btn-dark{background:var(--text);color:#fff}
+.btn-line{background:#fff;border:1px solid var(--border);color:var(--text)}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+
+/* ── Spinner ─────────────────────────────────── */
+.spin{width:15px;height:15px;border:2.5px solid rgba(255,255,255,.3);
+  border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ── Credit ──────────────────────────────────── */
+.credit{text-align:center;padding:18px 16px 6px;
+  font-size:11px;color:var(--sub);border-top:1px solid var(--border);margin-top:8px}
+.credit strong{color:var(--text)}
+
+/* ── Print ───────────────────────────────────── */
+@media print{
+  /* 基本 */
+  .tabs,.btn-row{display:none!important}
+  .pane{display:block!important}
+  body{background:#fff}
+  .hd{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .pane:not(#pane-report){display:none!important}
+  #pane-report{display:block!important}
+  #claude-sec{display:none!important}
+  #ai-comment-sec textarea{display:none!important}
+  #ai-comment-print{display:block!important}
+
+  /* 全体余白の圧縮 */
+  .wrap{padding:10px 12px 20px!important}
+  .sec{
+    break-inside:avoid;
+    border:1px solid #ddd;
+    margin-bottom:8px!important;
+    padding:12px 14px!important;
+  }
+  .sec-ttl{margin-bottom:8px!important}
+
+  /* スコア：flex縦並び・円グラフ重なり完全解消 */
+  .score-wrap{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    text-align:center!important;
+    padding:16px 0!important;
+  }
+  .ring-svg{
+    width:80px!important;
+    height:80px!important;
+    display:block!important;
+    margin:0!important;
+    flex-shrink:0!important;
+  }
+  .ring-center{
+    position:static!important;
+    margin-top:10px!important;
+    text-align:center!important;
+  }
+  .ring-num{font-size:24px!important;line-height:1.2!important}
+  .ring-lbl{font-size:11px!important}
+  .score-grade{
+    margin-top:6px!important;
+    font-size:13px!important;
+    font-weight:700!important;
+  }
+  .score-note{
+    margin-top:3px!important;
+    font-size:11px!important;
+    max-width:340px!important;
+    white-space:nowrap!important;
+  }
+  #score-sec{
+    margin-bottom:4px!important;
+    break-inside:avoid!important;
+    break-after:avoid!important;
+  }
+  .score-wrap{
+    padding-top:8px!important;
+    padding-bottom:8px!important;
+  }
+
+  /* KPI */
+  .kpi-grid{gap:6px!important;margin-top:0!important;margin-bottom:0!important}
+  .kpi{padding:8px 6px!important}
+  .kpi-ico{font-size:16px!important;margin-bottom:3px!important}
+  .kpi-val{font-size:15px!important}
+  .kpi-lbl{font-size:9px!important}
+  .kpi-bm{font-size:9px!important}
+  .sec:has(.kpi-grid){
+    break-inside:avoid!important;
+  }
+
+  /* AI分析コメント：ページまたぎ防止・新ページから開始 */
+  #ai-comment-sec{
+    break-inside:avoid!important;
+    break-before:always!important;
+  }
+
+  /* アクションプラン：カードを詰める */
+  #action-body > div{
+    margin-bottom:4px!important;
+    padding:7px 10px!important;
+  }
+}
+
+/* ── Responsive ──────────────────────────────── */
+@media(max-width:600px){
+  .g2,.g3{grid-template-columns:1fr 1fr}
+  .g4{grid-template-columns:1fr 1fr}
+  .kpi-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ── Header ─────────────────────────────────── -->
+<header class="hd">
+  <h1>Instagram インサイト分析レポート</h1>
+  <div class="period" id="period-disp"></div>
+</header>
+
+<!-- ── Tab Navigation ────────────────────────── -->
+<nav class="tabs">
+  <button class="tab-btn on" data-tab="pane-overview">概要</button>
+  <button class="tab-btn" data-tab="pane-content">コンテンツ</button>
+  <button class="tab-btn" data-tab="pane-audience">オーディエンス</button>
+  <button class="tab-btn" data-tab="pane-report">レポート</button>
+</nav>
+
+<!-- ══════════════════════════════════════════════
+  TAB 1: 概要
+═══════════════════════════════════════════════ -->
+<div class="pane on" id="pane-overview">
+<div class="wrap">
+
+  <!-- 分析期間 -->
+  <div class="sec">
+    <div class="sec-ttl">分析期間</div>
+    <div class="g2">
+      <div class="fg">
+        <label class="lbl" for="period-start">開始日</label>
+        <input type="date" id="period-start" onchange="updatePeriod()">
+      </div>
+      <div class="fg">
+        <label class="lbl" for="period-end">終了日</label>
+        <input type="date" id="period-end" onchange="updatePeriod()">
+      </div>
+    </div>
+  </div>
+
+  <!-- アカウント情報 -->
+  <div class="sec">
+    <div class="sec-ttl">アカウント情報</div>
+    <div class="g2">
+      <div class="fg">
+        <label class="lbl" for="acct-name">アカウント名</label>
+        <input type="text" id="acct-name" placeholder="@username">
+      </div>
+      <div class="fg">
+        <label class="lbl" for="acct-cat">業種カテゴリ</label>
+        <select id="acct-cat">
+          <option value="">選択してください</option>
+          <option>飲食・レストラン</option>
+          <option>美容・コスメ</option>
+          <option>アパレル・ファッション</option>
+          <option>フィットネス・ヘルス</option>
+          <option>ゴルフ・スポーツ</option>
+          <option>インテリア・雑貨</option>
+          <option>旅行・ホテル</option>
+          <option>宿泊・ホテル</option>
+          <option>エンターテイメント</option>
+          <option>教育・コーチング</option>
+          <option>写真・映像</option>
+          <option>デザイン・クリエイティブ</option>
+          <option>EC・小売</option>
+          <option>その他</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="lbl" for="acct-followers">フォロワー数 <span>（現在）</span></label>
+        <input type="number" id="acct-followers" placeholder="0" min="0">
+      </div>
+    </div>
+  </div>
+
+  <!-- 概要指標 -->
+  <div class="sec">
+    <div class="sec-ttl">概要 — 分析期間</div>
+    <div class="g2">
+      <div class="fg">
+        <label class="lbl" for="ov-views">閲覧数 <span>（すべてのコンテンツ）</span></label>
+        <input type="number" id="ov-views" placeholder="0" min="0">
+      </div>
+      <div class="fg">
+        <label class="lbl" for="ov-net-fol">純フォロワー <span>（マイナスも可）</span></label>
+        <input type="number" id="ov-net-fol" placeholder="0">
+        <div class="hint">増加は正の値、減少はマイナス値で入力</div>
+      </div>
+      <div class="fg">
+        <label class="lbl" for="ov-interact">インタラクション数</label>
+        <input type="number" id="ov-interact" placeholder="0" min="0">
+      </div>
+      <div class="fg">
+        <label class="lbl" for="ov-reach">リーチしたアカウント</label>
+        <input type="number" id="ov-reach" placeholder="0" min="0">
+      </div>
+    </div>
+  </div>
+
+  <!-- コンテンツタイプ別閲覧数 — リール→投稿→ストーリーズ→ライブ -->
+  <div class="sec">
+    <div class="sec-ttl">コンテンツタイプ別 閲覧数</div>
+    <div class="g2">
+      <div class="fg">
+        <label class="lbl" for="vt-reels">リール動画</label>
+        <input type="number" id="vt-reels" placeholder="0" min="0">
+      </div>
+      <div class="fg">
+        <label class="lbl" for="vt-posts">投稿</label>
+        <input type="number" id="vt-posts" placeholder="0" min="0">
+      </div>
+      <div class="fg">
+        <label class="lbl" for="vt-stories">ストーリーズ</label>
+        <input type="number" id="vt-stories" placeholder="0" min="0" oninput="calcStoryAuto()">
+      </div>
+      <div class="fg">
+        <label class="lbl" for="vt-live">ライブ動画</label>
+        <input type="number" id="vt-live" placeholder="0" min="0">
+      </div>
+    </div>
+  </div>
+
+  <!-- コンテンツタイプ別インタラクション — リール→投稿→ストーリーズ→ライブ -->
+  <div class="sec">
+    <div class="sec-ttl">コンテンツタイプ別 インタラクション</div>
+    <div class="g4">
+      <div class="fg">
+        <label class="lbl" for="it-reels">リール動画</label>
+        <input type="number" id="it-reels" placeholder="0" min="0">
+      </div>
+      <div class="fg">
+        <label class="lbl" for="it-posts">投稿</label>
+        <input type="number" id="it-posts" placeholder="0" min="0">
+      </div>
+      <div class="fg">
+        <label class="lbl" for="it-stories">ストーリーズ</label>
+        <input type="number" id="it-stories" placeholder="0" min="0">
+      </div>
+      <div class="fg">
+        <label class="lbl" for="it-live">ライブ動画</label>
+        <input type="number" id="it-live" placeholder="0" min="0">
+      </div>
+    </div>
+  </div>
+
+  <!-- プロフィールアクティビティ -->
+  <div class="sec">
+    <div class="sec-ttl">プロフィールアクティビティ</div>
+    <div class="g2">
+      <div class="fg">
+        <label class="lbl" for="pa-profile">プロフィールへのアクセス</label>
+        <input type="number" id="pa-profile" placeholder="0" min="0">
+      </div>
+      <div class="fg">
+        <label class="lbl" for="pa-link">自己紹介リンクのタップ数</label>
+        <input type="number" id="pa-link" placeholder="0" min="0">
+      </div>
+    </div>
+  </div>
+
+  <!-- 補足メモ -->
+  <div class="sec">
+    <div class="sec-ttl">補足メモ <span style="font-weight:400;text-transform:none;letter-spacing:0">（AI分析に反映されます）</span></div>
+    <div class="fg">
+      <textarea id="acct-memo" placeholder="アカウントの特徴、直近の施策、課題など補足情報を入力してください（任意）"></textarea>
+    </div>
+  </div>
+
+  <!-- データクリア -->
+  <div style="text-align:right;padding:4px 0 8px">
+    <button class="btn btn-line" onclick="clearStorage()" style="color:var(--red);border-color:var(--red);font-size:12px">入力データをクリア</button>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+  TAB 2: コンテンツ
+═══════════════════════════════════════════════ -->
+<div class="pane" id="pane-content">
+<div class="wrap">
+
+  <!-- リール動画 -->
+  <div class="sec">
+    <div class="sec-ttl">リール動画</div>
+
+    <div class="reel-card" id="rl-card-max">
+      <div class="reel-hd">
+        <div class="reel-num">↑</div>
+        <span style="font-size:13px;font-weight:700">最多閲覧数の投稿</span>
+      </div>
+      <div class="g3">
+        <div class="fg"><label class="lbl" for="rl-max-views">閲覧数</label><input type="number" id="rl-max-views" placeholder="0" min="0" oninput="calcReelAuto()"></div>
+        <div class="fg"><label class="lbl" for="rl-max-reach">リーチ</label><input type="number" id="rl-max-reach" placeholder="0" min="0" oninput="calcReelAuto()"></div>
+        <div class="fg"><label class="lbl" for="rl-max-likes">いいね</label><input type="number" id="rl-max-likes" placeholder="0" min="0" oninput="calcReelAuto()"></div>
+        <div class="fg"><label class="lbl" for="rl-max-comments">コメント</label><input type="number" id="rl-max-comments" placeholder="0" min="0" oninput="calcReelAuto()"></div>
+        <div class="fg"><label class="lbl" for="rl-max-shares">シェア</label><input type="number" id="rl-max-shares" placeholder="0" min="0" oninput="calcReelAuto()"></div>
+        <div class="fg"><label class="lbl" for="rl-max-saves">保存</label><input type="number" id="rl-max-saves" placeholder="0" min="0" oninput="calcReelAuto()"></div>
+      </div>
+    </div>
+
+    <div class="reel-card" id="rl-card-min">
+      <div class="reel-hd">
+        <div class="reel-num gray">↓</div>
+        <span style="font-size:13px;font-weight:700">最少閲覧数の投稿</span>
+      </div>
+      <div class="g2">
+        <div class="fg"><label class="lbl" for="rl-min-views">閲覧数</label><input type="number" id="rl-min-views" placeholder="0" min="0" oninput="calcReelAuto()"></div>
+        <div class="fg"><label class="lbl" for="rl-min-reach">リーチ</label><input type="number" id="rl-min-reach" placeholder="0" min="0"></div>
+      </div>
+    </div>
+
+    <div class="g3">
+      <div class="fg">
+        <label class="lbl" for="rl-count">30日間の投稿本数</label>
+        <input type="number" id="rl-count" placeholder="0" min="0" oninput="calcReelAuto()">
+      </div>
+      <div class="fg">
+        <label class="lbl">平均閲覧数 <span>（自動計算）</span></label>
+        <input type="text" id="rl-avg-views" class="calc-field" readonly placeholder="—">
+      </div>
+      <div class="fg">
+        <label class="lbl">平均ER <span>（自動計算）</span></label>
+        <input type="text" id="rl-avg-er" class="calc-field" readonly placeholder="—">
+      </div>
+    </div>
+  </div>
+
+  <!-- 投稿（フィード） -->
+  <div class="sec">
+    <div class="sec-ttl">投稿（フィード）</div>
+
+    <div class="reel-card" id="post-card-max" style="border-color:#BFDBFE;background:#F0F7FF">
+      <div class="reel-hd">
+        <div class="reel-num" style="background:linear-gradient(135deg,var(--ig-blue),var(--ig-purple))">↑</div>
+        <span style="font-size:13px;font-weight:700">最多閲覧数の投稿</span>
+      </div>
+      <div class="g3">
+        <div class="fg"><label class="lbl" for="post-max-views">閲覧数</label><input type="number" id="post-max-views" placeholder="0" min="0"></div>
+        <div class="fg"><label class="lbl" for="post-max-reach">リーチ</label><input type="number" id="post-max-reach" placeholder="0" min="0"></div>
+        <div class="fg"><label class="lbl" for="post-max-likes">いいね</label><input type="number" id="post-max-likes" placeholder="0" min="0"></div>
+        <div class="fg"><label class="lbl" for="post-max-comments">コメント</label><input type="number" id="post-max-comments" placeholder="0" min="0"></div>
+        <div class="fg"><label class="lbl" for="post-max-shares">シェア</label><input type="number" id="post-max-shares" placeholder="0" min="0"></div>
+        <div class="fg"><label class="lbl" for="post-max-saves">保存</label><input type="number" id="post-max-saves" placeholder="0" min="0"></div>
+      </div>
+    </div>
+
+    <div class="reel-card" id="post-card-min" style="border-color:#BFDBFE;background:#F0F7FF">
+      <div class="reel-hd">
+        <div class="reel-num gray">↓</div>
+        <span style="font-size:13px;font-weight:700">最少閲覧数の投稿</span>
+      </div>
+      <div class="g2" style="max-width:320px">
+        <div class="fg"><label class="lbl" for="post-min-views">閲覧数</label><input type="number" id="post-min-views" placeholder="0" min="0"></div>
+      </div>
+    </div>
+
+    <div class="fg" style="max-width:240px">
+      <label class="lbl" for="post-count">30日間の投稿本数</label>
+      <input type="number" id="post-count" placeholder="0" min="0" oninput="calcPostAuto()">
+    </div>
+  </div>
+
+  <!-- ストーリーズ -->
+  <div class="sec">
+    <div class="sec-ttl">ストーリーズ</div>
+    <div class="hint" style="margin-bottom:10px">平均閲覧数は概要タブの「ストーリーズ 閲覧数」÷ 投稿本数で自動計算されます</div>
+    <div class="g2" style="max-width:400px">
+      <div class="fg">
+        <label class="lbl" for="st-count">30日間の投稿本数</label>
+        <input type="number" id="st-count" placeholder="0" min="0" oninput="calcStoryAuto()">
+      </div>
+      <div class="fg">
+        <label class="lbl">平均閲覧数 <span>（自動計算）</span></label>
+        <input type="text" id="st-avg-views-calc" class="calc-field" readonly placeholder="—">
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+  TAB 3: オーディエンス
+═══════════════════════════════════════════════ -->
+<div class="pane" id="pane-audience">
+<div class="wrap">
+
+  <div class="sec">
+    <div class="sec-ttl">性別</div>
+    <div class="g2">
+      <div class="fg">
+        <label class="lbl" for="aud-female">女性 <span>(%)</span></label>
+        <input type="number" id="aud-female" placeholder="0" min="0" max="100" step="0.1">
+      </div>
+      <div class="fg">
+        <label class="lbl" for="aud-male">男性 <span>(%)</span></label>
+        <input type="number" id="aud-male" placeholder="0" min="0" max="100" step="0.1">
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-ttl">年齢層 <span style="font-weight:400;text-transform:none;letter-spacing:0">（各 %）</span></div>
+    <div class="g4">
+      <div class="fg"><label class="lbl" for="age-1317">13–17</label><input type="number" id="age-1317" placeholder="0" min="0" max="100" step="0.1"></div>
+      <div class="fg"><label class="lbl" for="age-1824">18–24</label><input type="number" id="age-1824" placeholder="0" min="0" max="100" step="0.1"></div>
+      <div class="fg"><label class="lbl" for="age-2534">25–34</label><input type="number" id="age-2534" placeholder="0" min="0" max="100" step="0.1"></div>
+      <div class="fg"><label class="lbl" for="age-3544">35–44</label><input type="number" id="age-3544" placeholder="0" min="0" max="100" step="0.1"></div>
+      <div class="fg"><label class="lbl" for="age-4554">45–54</label><input type="number" id="age-4554" placeholder="0" min="0" max="100" step="0.1"></div>
+      <div class="fg"><label class="lbl" for="age-5564">55–64</label><input type="number" id="age-5564" placeholder="0" min="0" max="100" step="0.1"></div>
+      <div class="fg"><label class="lbl" for="age-65p">65+</label><input type="number" id="age-65p" placeholder="0" min="0" max="100" step="0.1"></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+  TAB 4: レポート
+═══════════════════════════════════════════════ -->
+<div class="pane" id="pane-report">
+<div class="wrap">
+
+  <!-- アクション -->
+  <div class="btn-row">
+    <button class="btn btn-dark" onclick="buildReport()">&#9654; レポート生成</button>
+    <button class="btn btn-line" onclick="window.print()">&#x1F5A8; PDF印刷</button>
+  </div>
+
+  <!-- 総合スコア -->
+  <div class="sec" id="score-sec">
+    <div class="sec-ttl">総合スコア</div>
+    <div class="score-wrap">
+      <svg class="ring-svg" viewBox="0 0 150 150">
+        <defs>
+          <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#833AB4"/>
+            <stop offset="100%" stop-color="#E1306C"/>
+          </linearGradient>
+        </defs>
+        <circle class="ring-track" cx="75" cy="75" r="60"/>
+        <circle class="ring-fill" id="ring-fill" cx="75" cy="75" r="60"
+          stroke="url(#rg)"
+          stroke-dasharray="376.99"
+          stroke-dashoffset="376.99"
+          transform="rotate(-90 75 75)"/>
+      </svg>
+      <div class="ring-center">
+        <span class="ring-num" id="score-num">—</span>
+        <span class="ring-lbl">/ 100点</span>
+      </div>
+      <div class="score-grade" id="score-grade"></div>
+      <div class="score-note" id="score-note"></div>
+    </div>
+  </div>
+
+  <!-- KPI -->
+  <div class="sec">
+    <div class="sec-ttl">KPI 指標</div>
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-ico">❤️</div>
+        <div class="kpi-lbl">エンゲージメント率<br>（リール）</div>
+        <div class="kpi-val" id="k-er">—</div>
+        <div class="kpi-bm">目安：3%以上で良好</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-ico">👁</div>
+        <div class="kpi-lbl">リーチ率<br>（フォロワー比）</div>
+        <div class="kpi-val" id="k-rr">—</div>
+        <div class="kpi-bm">目安：15%以上で良好</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-ico">📈</div>
+        <div class="kpi-lbl">フォロワー<br>成長率</div>
+        <div class="kpi-val" id="k-gr">—</div>
+        <div class="kpi-bm">目安：1%以上で良好</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-ico">💬</div>
+        <div class="kpi-lbl">インタラクション率<br>（リーチ比）</div>
+        <div class="kpi-val" id="k-ir">—</div>
+        <div class="kpi-bm">目安：2%以上で良好</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-ico">🔗</div>
+        <div class="kpi-lbl">プロフィール<br>アクセス率</div>
+        <div class="kpi-val" id="k-pa">—</div>
+        <div class="kpi-bm">目安：5%以上で良好</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-ico">🔖</div>
+        <div class="kpi-lbl">リール<br>保存率</div>
+        <div class="kpi-val" id="k-sv">—</div>
+        <div class="kpi-bm">目安：1%以上で良好</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- アクションプラン -->
+  <div class="sec" id="action-sec">
+    <div class="sec-ttl">アクションプラン</div>
+    <div id="action-body"><div style="font-size:13px;color:var(--sub)">レポートを生成すると表示されます</div></div>
+  </div>
+
+  <!-- 概要数値サマリー -->
+  <!-- コンテンツパフォーマンス -->
+  <div class="sec" id="reels-sec">
+    <div class="sec-ttl">コンテンツ パフォーマンス</div>
+    <div id="reels-body"></div>
+  </div>
+
+  <!-- オーディエンスサマリー -->
+  <div class="sec" id="audience-sec">
+    <div class="sec-ttl">オーディエンス</div>
+    <div id="audience-body"></div>
+  </div>
+
+  <!-- AI分析コメント（貼り付け） -->
+  <div class="sec" id="ai-comment-sec">
+    <div class="sec-ttl">AI分析コメント（Claudeから貼り付け）</div>
+    <textarea id="ai-comment" oninput="syncAiComment()" placeholder="Claude.ai から取得した分析コメントをここに貼り付けてください" style="min-height:180px;font-size:13px;line-height:1.8"></textarea>
+    <div id="ai-comment-print" style="display:none;font-size:13px;line-height:1.8;white-space:pre-wrap;color:var(--text)"></div>
+  </div>
+
+  <!-- Claude 分析依頼テキスト -->
+  <div class="sec" id="claude-sec">
+    <div class="sec-ttl">Claude に貼り付けて分析依頼</div>
+    <div style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <span class="hint">レポート生成後、このテキストをコピーして Claude.ai に貼り付けてください</span>
+      <button class="btn btn-line" onclick="copyClaudePrompt(this)" style="flex-shrink:0;min-width:80px">コピー</button>
+    </div>
+    <textarea id="claude-prompt" style="min-height:240px;font-size:13px;line-height:1.7;background:#F0F7FF;border-color:#BFDBFE" placeholder="「レポート生成」ボタンを押すと自動で作成されます"></textarea>
+  </div>
+
+  <!-- クレジット -->
+  <div class="credit" id="credit-area">
+    <strong>スリーイーデザイン</strong> — Instagram インサイト分析レポート<br>
+    作成日：<span id="created-date"></span>　分析期間：<span id="credit-period"></span>
+  </div>
+
+</div>
+</div>
+
+<script>
+/* ── Helpers ──────────────────────────────────── */
+const $ = id => document.getElementById(id);
+const num = id => parseFloat($( id)?.value) || 0;
+const int = id => parseInt($( id)?.value) || 0;
+const txt = id => ($( id)?.value || '').trim();
+
+function fmt(n, dec=0){
+  if(n===undefined||n===null||isNaN(n)) return '—';
+  return n.toLocaleString('ja-JP',{minimumFractionDigits:dec,maximumFractionDigits:dec});
+}
+function fmtPct(n,dec=1){
+  if(isNaN(n)||!isFinite(n)) return '—';
+  return (n>=0?'+':'')+n.toFixed(dec)+'%';
+}
+function pct(n){
+  if(isNaN(n)||!isFinite(n)) return '—';
+  return n.toFixed(1)+'%';
+}
+
+/* ── Period display ───────────────────────────── */
+function updatePeriod(){
+  const sv = $('period-start')?.value;
+  const ev = $('period-end')?.value;
+  if(!sv || !ev) return;
+  const start = new Date(sv + 'T00:00:00');
+  const end   = new Date(ev + 'T00:00:00');
+  const jp = d => `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+  const jpShort = d => `${d.getMonth()+1}月${d.getDate()}日`;
+  const days = Math.round((end - start) / 86400000) + 1;
+  $('period-disp').textContent = `分析期間：${jp(start)} 〜 ${jp(end)}（${days}日間）`;
+  $('credit-period').textContent = `${jpShort(start)}〜${jpShort(end)}`;
+}
+
+(function initDate(){
+  const today = new Date();
+  const ago   = new Date(today); ago.setDate(today.getDate()-30);
+  const toVal = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const jp = d => `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+  $('period-start').value = toVal(ago);
+  $('period-end').value   = toVal(today);
+  $('created-date').textContent = jp(today);
+  updatePeriod();
+})();
+
+/* ── Tab switching ────────────────────────────── */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
+    document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));
+    btn.classList.add('on');
+    $(btn.dataset.tab).classList.add('on');
+    if(btn.dataset.tab==='pane-report') buildReport();
+  });
+});
+
+/* ── Reel auto-calculation ────────────────────── */
+function calcReelAuto(){
+  const maxV  = int('rl-max-views');
+  const minV  = int('rl-min-views');
+  const maxR  = int('rl-max-reach');
+  const maxL  = int('rl-max-likes');
+  const maxC  = int('rl-max-comments');
+  const maxSh = int('rl-max-shares');
+  const maxS  = int('rl-max-saves');
+  const cnt   = int('rl-count');
+
+  const cardMax = $('rl-card-max');
+  const cardMin = $('rl-card-min');
+  if(cardMax) cardMax.style.display = cnt >= 1 ? '' : 'none';
+  if(cardMin) cardMin.style.display = cnt >= 2 ? '' : 'none';
+
+  if(cnt === 1 && maxV > 0){
+    $('rl-avg-views').value = maxV.toLocaleString('ja-JP');
+  } else if(cnt >= 2 && maxV > 0 && minV > 0){
+    $('rl-avg-views').value = Math.round((maxV + minV) / 2).toLocaleString('ja-JP');
+  } else {
+    $('rl-avg-views').value = '';
+  }
+
+  $('rl-avg-er').value = (maxR > 0 && (maxL > 0 || maxC > 0 || maxSh > 0 || maxS > 0))
+    ? ((maxL + maxC + maxSh + maxS) / maxR * 100).toFixed(1) + '%'
+    : '';
+}
+
+function calcPostAuto(){
+  const cnt = int('post-count');
+  const cardMax = $('post-card-max');
+  const cardMin = $('post-card-min');
+  if(cardMax) cardMax.style.display = cnt >= 1 ? '' : 'none';
+  if(cardMin) cardMin.style.display = cnt >= 2 ? '' : 'none';
+}
+
+function calcStoryAuto(){
+  const total = int('vt-stories');
+  const cnt   = int('st-count');
+  const el = $('st-avg-views-calc');
+  if(el) el.value = (total > 0 && cnt > 0) ? Math.round(total / cnt).toLocaleString('ja-JP') : '';
+}
+
+/* ── Score calculation ────────────────────────── */
+function calcMetrics(){
+  const followers  = int('acct-followers');
+  const reach      = int('ov-reach');
+  const interact   = int('ov-interact');
+  const netFol     = int('ov-net-fol');
+  const profAccess = int('pa-profile');
+
+  const rlMaxViews = int('rl-max-views');
+  const rlMaxReach = int('rl-max-reach');
+  const rlMaxLikes    = int('rl-max-likes');
+  const rlMaxComments = int('rl-max-comments');
+  const rlMaxShares   = int('rl-max-shares');
+  const rlMaxSaves    = int('rl-max-saves');
+  const rlMinViews = int('rl-min-views');
+  const rlMinReach = int('rl-min-reach');
+  const rlCount    = int('rl-count');
+
+  const hasEngagement = rlMaxLikes > 0 || rlMaxComments > 0 || rlMaxShares > 0 || rlMaxSaves > 0;
+  const er  = (rlMaxReach > 0 && hasEngagement)
+    ? ((rlMaxLikes + rlMaxComments + rlMaxShares + rlMaxSaves) / rlMaxReach) * 100 : NaN;
+  const sv  = rlMaxReach > 0 ? (rlMaxSaves / rlMaxReach) * 100 : NaN;
+  const rlAvgViews = rlCount === 1 && rlMaxViews > 0
+    ? rlMaxViews
+    : (rlCount >= 2 && rlMaxViews > 0 && rlMinViews > 0)
+      ? Math.round((rlMaxViews + rlMinViews) / 2)
+      : NaN;
+
+  const rr  = followers > 0 ? (reach / followers) * 100  : NaN;
+  const gr  = followers > 0 ? (netFol / followers) * 100 : NaN;
+  const ir  = reach > 0     ? (interact / reach) * 100   : NaN;
+  const pa  = reach > 0     ? (profAccess / reach) * 100 : NaN;
+
+  /* スコア: 入力済みの指標のみで100点満点に正規化 */
+  let earned = 0, avail = 0;
+
+  if(!isNaN(er) && isFinite(er)){
+    avail += 30;
+    if(er>=6)      earned+=30;
+    else if(er>=3) earned+=Math.round(20+(er-3)/3*10);
+    else if(er>=1) earned+=Math.round(10+(er-1)/2*10);
+    else           earned+=Math.round(er*10);
+  }
+  if(!isNaN(rr) && isFinite(rr)){
+    avail += 25;
+    if(rr>=30)      earned+=25;
+    else if(rr>=15) earned+=Math.round(15+(rr-15)/15*10);
+    else if(rr>=5)  earned+=Math.round(5+(rr-5)/10*10);
+    else            earned+=Math.round(rr/5*5);
+  }
+  if(!isNaN(gr) && isFinite(gr)){
+    avail += 20;
+    if(gr>=5)        earned+=20;
+    else if(gr>=2)   earned+=Math.round(13+(gr-2)/3*7);
+    else if(gr>=0.5) earned+=Math.round(5+(gr-0.5)/1.5*8);
+    else if(gr>=0)   earned+=Math.round(gr/0.5*5);
+  }
+  if(!isNaN(ir) && isFinite(ir)){
+    avail += 15;
+    if(ir>=5)        earned+=15;
+    else if(ir>=2)   earned+=Math.round(10+(ir-2)/3*5);
+    else if(ir>=0.5) earned+=Math.round(4+(ir-0.5)/1.5*6);
+    else             earned+=Math.round(ir*8);
+  }
+  if(!isNaN(pa) && isFinite(pa)){
+    avail += 10;
+    if(pa>=10)      earned+=10;
+    else if(pa>=5)  earned+=Math.round(7+(pa-5)/5*3);
+    else if(pa>=2)  earned+=Math.round(3+(pa-2)/3*4);
+    else            earned+=Math.round(pa/2*3);
+  }
+
+  const score = avail > 0
+    ? Math.min(100, Math.max(0, Math.round(earned / avail * 100)))
+    : 0;
+
+  return {
+    score, er, rr, gr, ir, pa, sv, rlAvgViews,
+    followers, reach, interact, netFol, profAccess,
+    rlMaxViews, rlMaxReach, rlMaxLikes, rlMaxComments, rlMaxShares, rlMaxSaves,
+    rlMinViews, rlMinReach, rlCount
+  };
+}
+
+function gradeInfo(s){
+  if(s>=85) return {grade:'S — 非常に優秀',color:'#22C55E',note:'ほぼすべての指標がベンチマークを上回っています。この状態を維持してください。'};
+  if(s>=70) return {grade:'A — 良好',       color:'#3B82F6',note:'全体的に良いパフォーマンスです。弱い指標を中心に改善するとさらに伸びます。'};
+  if(s>=55) return {grade:'B — 平均以上',   color:'#8B5CF6',note:'平均をやや上回っています。エンゲージメントとリーチの底上げが次のステップです。'};
+  if(s>=40) return {grade:'C — 平均',       color:'#F59E0B',note:'一部の指標が改善余地あり。コンテンツの質とCTAを見直しましょう。'};
+  if(s>=25) return {grade:'D — 要改善',     color:'#EF4444',note:'複数の指標が低水準です。投稿頻度・フォーマット・キャプションを総点検してください。'};
+  return      {grade:'E — 改善が必要',      color:'#991B1B',note:'データが少ない、または指標が全体的に低い状態です。まず基本設定を確認してください。'};
+}
+
+function kpiClass(v,good,avg){
+  if(isNaN(v)||!isFinite(v)) return '';
+  if(v>=good) return 'g';
+  if(v>=avg)  return 'a';
+  return 'r';
+}
+
+/* ── Build report ─────────────────────────────── */
+function buildReport(){
+  const m = calcMetrics();
+  const {score,er,rr,gr,ir,pa,sv,followers,reach,interact,netFol,profAccess} = m;
+
+  const circ = 376.99;
+  const offset = circ - (score/100)*circ;
+  const fill = $('ring-fill');
+  fill.style.strokeDashoffset = circ;
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{ fill.style.strokeDashoffset = offset; });
+  });
+  $('score-num').textContent = score;
+  const gi = gradeInfo(score);
+  $('score-grade').textContent = gi.grade;
+  $('score-grade').style.color = gi.color;
+  $('score-note').textContent  = gi.note;
+
+  $('k-er').textContent = isNaN(er)||!isFinite(er) ? '—' : pct(er);
+  $('k-er').className   = 'kpi-val '+kpiClass(er,3,1);
+  $('k-rr').textContent = isNaN(rr)||!isFinite(rr) ? '—' : pct(rr);
+  $('k-rr').className   = 'kpi-val '+kpiClass(rr,15,5);
+  $('k-gr').textContent = isNaN(gr)||!isFinite(gr) ? '—' : fmtPct(gr);
+  $('k-gr').className   = 'kpi-val '+kpiClass(gr,1,0);
+  $('k-ir').textContent = isNaN(ir)||!isFinite(ir) ? '—' : pct(ir);
+  $('k-ir').className   = 'kpi-val '+kpiClass(ir,2,0.5);
+  $('k-pa').textContent = isNaN(pa)||!isFinite(pa) ? '—' : pct(pa);
+  $('k-pa').className   = 'kpi-val '+kpiClass(pa,5,2);
+  $('k-sv').textContent = isNaN(sv)||!isFinite(sv) ? '—' : pct(sv);
+  $('k-sv').className   = 'kpi-val '+kpiClass(sv,1,0.3);
+
+  // 分析期間を表示用フォーマット
+  const sv2 = $('period-start')?.value, ev2 = $('period-end')?.value;
+  let periodLabel = '—';
+  if(sv2 && ev2){
+    const s = new Date(sv2+'T00:00:00'), e = new Date(ev2+'T00:00:00');
+    const jp = d => `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+    const days = Math.round((e-s)/86400000)+1;
+    periodLabel = `${jp(s)} 〜 ${jp(e)}（${days}日間）`;
+  }
+
+  // コンテンツパフォーマンス
+  let html = '';
+  const subHead = t => `<div style="font-size:12px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border)">${t}</div>`;
+  const statGrid = (cols, items) =>
+    `<div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:8px;text-align:center">${
+      items.map(([l,v,c])=>`<div><div style="font-size:10px;color:var(--sub)">${l}</div><div style="font-weight:700${c?';color:'+c:''}">${v}</div></div>`).join('')
+    }</div>`;
+
+  // リール動画
+  if(m.rlMaxViews > 0 || m.rlMaxReach > 0){
+    const rlMaxER = m.rlMaxReach > 0 ? pct((m.rlMaxLikes + m.rlMaxComments + m.rlMaxShares + m.rlMaxSaves) / m.rlMaxReach * 100) : '—';
+    html += subHead('リール動画');
+    html += `<div style="background:#F8F8F8;border-radius:9px;padding:12px 14px;margin-bottom:8px">
+      <div style="font-size:11px;color:var(--sub);margin-bottom:7px">最多閲覧数の投稿</div>
+      ${statGrid(4,[['閲覧数',fmt(m.rlMaxViews)],['リーチ',fmt(m.rlMaxReach)],['いいね',fmt(m.rlMaxLikes)],['コメント',fmt(m.rlMaxComments)],['シェア',fmt(m.rlMaxShares)],['保存',fmt(m.rlMaxSaves)],['ER',rlMaxER,'var(--ig-rose)']])}
+    </div>`;
+    if(m.rlMinViews > 0){
+      html += `<div style="background:#F8F8F8;border-radius:9px;padding:12px 14px;margin-bottom:8px">
+        <div style="font-size:11px;color:var(--sub);margin-bottom:7px">最少閲覧数の投稿</div>
+        ${statGrid(2,[['閲覧数',fmt(m.rlMinViews)],['リーチ',fmt(m.rlMinReach)]])}
+      </div>`;
+    }
+    html += `<div style="font-size:13px;display:flex;gap:20px;flex-wrap:wrap;margin-bottom:4px">
+      <span><span style="color:var(--sub)">30日間本数：</span><strong>${m.rlCount>0?m.rlCount+'本':'—'}</strong></span>
+      <span><span style="color:var(--sub)">平均閲覧数：</span><strong>${!isNaN(m.rlAvgViews)?fmt(m.rlAvgViews):'—'}</strong></span>
+      <span><span style="color:var(--sub)">参考ER：</span><strong style="color:var(--ig-rose)">${rlMaxER}</strong></span>
+    </div>`;
+  }
+
+  // 投稿（フィード）
+  const postMaxV = int('post-max-views'), postMaxR = int('post-max-reach');
+  const postMaxL = int('post-max-likes'), postMaxC = int('post-max-comments');
+  const postMaxSh = int('post-max-shares'), postMaxS = int('post-max-saves');
+  const postMinV = int('post-min-views'), postCnt = int('post-count');
+  if(postMaxV > 0 || postMaxR > 0){
+    const postER = postMaxR > 0 ? pct((postMaxL + postMaxC + postMaxSh + postMaxS) / postMaxR * 100) : '—';
+    html += subHead('投稿（フィード）');
+    html += `<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:9px;padding:12px 14px;margin-bottom:8px">
+      <div style="font-size:11px;color:var(--sub);margin-bottom:7px">最多閲覧数の投稿</div>
+      ${statGrid(4,[['閲覧数',fmt(postMaxV)],['リーチ',fmt(postMaxR)],['いいね',fmt(postMaxL)],['コメント',fmt(postMaxC)],['シェア',fmt(postMaxSh)],['保存',fmt(postMaxS)],['ER',postER,'var(--ig-blue)']])}
+    </div>`;
+    if(postMinV > 0){
+      html += `<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:9px;padding:12px 14px;margin-bottom:8px">
+        <div style="font-size:11px;color:var(--sub);margin-bottom:7px">最少閲覧数の投稿</div>
+        ${statGrid(1,[['閲覧数',fmt(postMinV)]])}
+      </div>`;
+    }
+    html += `<div style="font-size:13px;display:flex;gap:20px;flex-wrap:wrap;margin-bottom:4px">
+      <span><span style="color:var(--sub)">30日間本数：</span><strong>${postCnt>0?postCnt+'本':'—'}</strong></span>
+      <span><span style="color:var(--sub)">参考ER：</span><strong style="color:var(--ig-blue)">${postER}</strong></span>
+    </div>`;
+  }
+
+  // ストーリーズ
+  const stCnt = int('st-count');
+  const stAvgV = stCnt > 0 ? Math.round(int('vt-stories') / stCnt) : 0;
+  if(stAvgV > 0 || stCnt > 0){
+    html += subHead('ストーリーズ');
+    html += `<div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:9px;padding:12px 14px">
+      ${statGrid(2,[['平均閲覧数（自動）',fmt(stAvgV)],['30日間本数',stCnt>0?stCnt+'本':'—']])}
+    </div>`;
+  }
+
+  $('reels-body').innerHTML = html || '<div style="color:var(--sub);font-size:13px">コンテンツタブにデータを入力してください</div>';
+
+  // オーディエンス
+  const female = num('aud-female'), male = num('aud-male');
+  const ages = [
+    ['13–17',num('age-1317')],['18–24',num('age-1824')],['25–34',num('age-2534')],
+    ['35–44',num('age-3544')],['45–54',num('age-4554')],['55–64',num('age-5564')],['65+',num('age-65p')]
+  ];
+  let audHtml = '';
+  if(female||male){
+    audHtml += `<div class="drow"><span class="drow-lbl">性別</span>
+      <span class="drow-val">女性 ${female||0}%　男性 ${male||0}%</span></div>`;
+  }
+  ages.forEach(([l,v])=>{
+    if(v>0){
+      audHtml += `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #F3F3F3">
+        <span style="width:42px;font-size:12px;color:var(--sub);flex-shrink:0">${l}</span>
+        <div style="flex:1;background:#EFEFEF;border-radius:4px;height:8px;overflow:hidden">
+          <div style="height:8px;width:${Math.min(Math.round(v)*2,100)}%;background:linear-gradient(90deg,var(--ig-purple),var(--ig-rose));border-radius:4px"></div>
+        </div>
+        <span style="width:36px;text-align:right;font-size:12px;font-weight:700">${v}%</span>
+      </div>`;
+    }
+  });
+  $('audience-body').innerHTML = audHtml || '<div style="color:var(--sub);font-size:13px">オーディエンスタブにデータを入力してください</div>';
+
+  buildActionPlan();
+  buildClaudePrompt();
+}
+
+/* ── Action plan ──────────────────────────────── */
+function buildActionPlan(){
+  const m = calcMetrics();
+  const {score, er, gr, rr, ir, pa, followers, rlAvgViews, rlCount} = m;
+  const stCnt  = int('st-count');
+  const stAvgV = stCnt > 0 ? Math.round(int('vt-stories') / stCnt) : 0;
+  const postMaxV = int('post-max-views');
+  const postMinV = int('post-min-views');
+  const postCount = int('post-count');
+
+  const items = [];
+  const w = t => items.push({type:'warn', text:t});
+  const g = t => items.push({type:'good', text:t});
+
+  if(!isNaN(gr)&&isFinite(gr)&&gr<0.5 && !isNaN(rr)&&isFinite(rr)&&rr>=30)
+    w('リーチは十分に獲得できていますが、フォロワーへの転換が課題です。\nプロフィール文の見直し・ハイライトの整備・フォローする理由の明確化を優先してください。');
+
+  if(rlCount>0 && rlCount<2)
+    w('リールの投稿頻度が低い状態です。拡散力が高いコンテンツなので\n月4本（週1本）を目標に増やしましょう。冒頭3秒で目を引くフックが重要です。');
+
+  if(!isNaN(rlAvgViews) && followers>0 && rlAvgViews < followers*0.3)
+    w('リールの閲覧数がフォロワー比で低めです。\nテロップ・BGM・縦型構成の見直しと、投稿時間をフォロワーがアクティブな時間帯に合わせることを検討してください。');
+
+  if(!isNaN(rlAvgViews) && followers>0 && rlAvgViews >= followers)
+    g('リールの拡散力が非常に高い状態です。\nこのジャンル・形式の投稿を継続しながら、プロフィールへの誘導を強化しましょう。');
+
+  if(!isNaN(er)&&isFinite(er)&&er<1.5)
+    w('エンゲージメント率が低い状態です。\n「保存したくなる情報」「コメントしたくなる問いかけ」をキャプションに盛り込んでください。\nカルーセル投稿やチェックリスト形式も効果的です。');
+
+  if(!isNaN(er)&&isFinite(er)&&er>=5)
+    g('エンゲージメント率が非常に高い状態です。\nフォロワーとの関係性が良好な証拠です。この質を維持しながら投稿頻度を上げることで\nさらなる成長が見込めます。');
+
+  if(!isNaN(ir)&&isFinite(ir)&&ir<2)
+    w('リーチに対してインタラクションが少ない状態です。\nストーリーズでのアンケート・質問スタンプの活用や、\n投稿キャプションでの行動喚起（CTA）を増やしましょう。');
+
+  if(stAvgV>0 && followers>0 && stAvgV < followers*0.1)
+    w('ストーリーズの閲覧率が低めです。\n投稿頻度を増やすか、アンケート・クイズスタンプを活用して\nフォロワーが反応したくなるコンテンツを意識してください。');
+
+  if(!isNaN(pa)&&isFinite(pa)&&pa>=5)
+    g('プロフィールへのアクセスが多い状態です。\nプロフィール文・ハイライト・リンクの最適化でフォロワー獲得につなげましょう。');
+
+  if(postCount>=2 && postMaxV>0 && postMinV>0 && postMaxV>=postMinV*3)
+    w('投稿によって閲覧数に大きなばらつきがあります。\n閲覧数が高かった投稿のテーマ・構成・サムネイルを分析して\n次の投稿に活かしましょう。');
+
+  if(score>=75)
+    g('全体的に良好な状態です。現在の投稿ペースと\nコンテンツ戦略を維持しながら、新しいジャンルや\nコラボ投稿にも挑戦してみましょう。');
+
+  let html = '';
+  if(items.length === 0){
+    html = '<div style="font-size:13px;color:var(--sub)">現時点で特筆すべき課題はありません</div>';
+  } else {
+    html = items.map((item, i) => {
+      const icon       = item.type === 'good' ? '✅' : '⚠️';
+      const headColor  = item.type === 'good' ? '#15803D' : '#92400E';
+      const bg         = item.type === 'good' ? '#F0FDF4' : '#FFFBEB';
+      const border     = item.type === 'good' ? '#BBF7D0' : '#FDE68A';
+      const lines      = item.text.split('\n');
+      const headline   = lines[0];
+      const body       = lines.slice(1).join('\n');
+      return `<div style="display:flex;gap:10px;padding:12px 14px;background:${bg};border:1px solid ${border};border-radius:9px;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:700;color:var(--sub);flex-shrink:0;padding-top:2px">${i+1}.</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:${headColor};line-height:1.5">${icon} ${headline}</div>
+          ${body ? `<div style="font-size:12px;color:var(--sub);margin-top:5px;line-height:1.75;white-space:pre-line">${body}</div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  $('action-body').innerHTML = html;
+}
+
+function syncAiComment(){
+  const pv = $('ai-comment-print');
+  if(pv) pv.textContent = $('ai-comment')?.value || '';
+}
+
+/* ── Claude prompt builder ────────────────────── */
+function buildClaudePrompt(){
+  const m = calcMetrics();
+
+  const sv = $('period-start')?.value, ev = $('period-end')?.value;
+  let periodStr = '（未設定）';
+  if(sv && ev){
+    const s = new Date(sv+'T00:00:00'), e = new Date(ev+'T00:00:00');
+    periodStr = `${s.getMonth()+1}月${s.getDate()}日〜${e.getMonth()+1}月${e.getDate()}日`;
+  }
+
+  const stCnt   = int('st-count');
+  const stAvgV  = stCnt > 0 ? Math.round(int('vt-stories') / stCnt) : 0;
+  const rlCnt   = m.rlCount;
+  const postCnt = int('post-count');
+  const postMinV = int('post-min-views');
+
+  const v  = n => n > 0 ? n.toLocaleString('ja-JP') : '—';
+  const vp = n => (n >= 0 ? '+' : '') + n + '人';
+  const vf = n => isNaN(n) || !isFinite(n) ? '—' : n.toFixed(1) + '%';
+
+  const lines = [
+    '--- Instagram インサイトデータ ---',
+    `アカウント名：${txt('acct-name')||'（未入力）'}`,
+    `業種：${txt('acct-cat')||'（未入力）'}`,
+    `分析期間：${periodStr}`,
+    `フォロワー数：${m.followers > 0 ? m.followers.toLocaleString('ja-JP')+'人' : '—'}`,
+    '',
+    '■ 概要指標（30日間）',
+    `閲覧数：${v(int('ov-views'))}`,
+    `純フォロワー：${vp(m.netFol)}`,
+    `インタラクション：${v(m.interact)}`,
+    `リーチ：${m.reach > 0 ? m.reach.toLocaleString('ja-JP')+'人' : '—'}`,
+    '',
+    '■ コンテンツタイプ別閲覧数',
+    `リール動画：${v(int('vt-reels'))}`,
+    `投稿：${v(int('vt-posts'))}`,
+    `ストーリーズ：${v(int('vt-stories'))}`,
+    `ライブ：${v(int('vt-live'))}`,
+    '',
+    '■ リール動画',
+    `最多閲覧数：${v(m.rlMaxViews)} / 最少：${rlCnt >= 2 ? v(m.rlMinViews) : '—'} / 平均：${!isNaN(m.rlAvgViews) ? m.rlAvgViews.toLocaleString('ja-JP') : '—'}`,
+    `30日間投稿本数：${rlCnt > 0 ? rlCnt+'本' : '—'}`,
+    '',
+    '■ 投稿（フィード）',
+    `最多閲覧数：${v(int('post-max-views'))} / 最少：${postCnt >= 2 && postMinV > 0 ? postMinV.toLocaleString('ja-JP') : '—'}`,
+    `30日間投稿本数：${postCnt > 0 ? postCnt+'本' : '—'}`,
+    '',
+    '■ ストーリーズ',
+    `平均閲覧数：${stAvgV > 0 ? stAvgV.toLocaleString('ja-JP') : '—'}（${stCnt}本）`,
+    '',
+    '■ オーディエンス',
+    `性別：女性${num('aud-female')||0}% / 男性${num('aud-male')||0}%`,
+    '',
+    '■ KPI',
+    `総合スコア：${m.score}点`,
+    `エンゲージメント率：${vf(m.er)}`,
+    `リーチ率：${vf(m.rr)}`,
+    `フォロワー成長率：${vf(m.gr)}`,
+    '',
+    'このデータをもとにInstagramアカウントを分析してください。',
+    '業種特性・フォロワー規模・各指標の関係性を踏まえて、',
+    '強み・課題・次の30日間の優先施策を具体的に教えてください。',
+    '---',
+  ];
+
+  const el = $('claude-prompt');
+  if(el) el.value = lines.join('\n');
+}
+
+function copyClaudePrompt(btn){
+  const el = $('claude-prompt');
+  if(!el || !el.value) return;
+  navigator.clipboard.writeText(el.value).then(()=>{
+    btn.textContent = '✓ コピー済み';
+    setTimeout(()=>{ btn.textContent = 'コピー'; }, 2000);
+  }).catch(()=>{
+    el.select();
+    document.execCommand('copy');
+  });
+}
+
+/* ── LocalStorage auto-save ───────────────────── */
+const LS_KEY = 'ig_report_data';
+
+function saveStorage(){
+  const data = {};
+  document.querySelectorAll('input:not([readonly]),select,textarea').forEach(el=>{
+    if(el.id) data[el.id] = el.value;
+  });
+  localStorage.setItem(LS_KEY, JSON.stringify(data));
+}
+
+function restoreStorage(){
+  let data;
+  try{ data = JSON.parse(localStorage.getItem(LS_KEY)||'{}'); }catch(e){ return; }
+  Object.entries(data).forEach(([id,val])=>{
+    const el = $(id);
+    if(el && !el.readOnly) el.value = val;
+  });
+  updatePeriod();
+  calcReelAuto();
+  calcPostAuto();
+  calcStoryAuto();
+  syncAiComment();
+}
+
+function clearStorage(){
+  if(!confirm('入力データをすべてクリアしますか？')) return;
+  localStorage.removeItem(LS_KEY);
+  document.querySelectorAll('input:not([readonly]),select,textarea').forEach(el=>{
+    if(el.id) el.value = '';
+  });
+  const today = new Date();
+  const ago = new Date(today); ago.setDate(today.getDate()-30);
+  const toVal = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  $('period-start').value = toVal(ago);
+  $('period-end').value = toVal(today);
+  updatePeriod();
+  calcReelAuto();
+  calcPostAuto();
+  calcStoryAuto();
+}
+
+document.querySelectorAll('input:not([readonly]),select,textarea').forEach(el=>{
+  el.addEventListener('input', saveStorage);
+  el.addEventListener('change', saveStorage);
+});
+restoreStorage();
+</script>
+</body>
+</html>
