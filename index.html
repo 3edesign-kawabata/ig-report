@@ -515,14 +515,10 @@ textarea:focus{outline:none;border-color:var(--blue)}
   <div class="sec">
     <div class="sec-ttl">ストーリーズ</div>
     <div class="hint" style="margin-bottom:10px">平均閲覧数は概要タブの「ストーリーズ 閲覧数」÷ 投稿本数で自動計算されます</div>
-    <div class="g4">
+    <div class="g3">
       <div class="fg">
         <label class="lbl" for="st-count">30日間の投稿本数</label>
         <input type="number" id="st-count" placeholder="0" min="0" oninput="calcStoryAuto()">
-      </div>
-      <div class="fg">
-        <label class="lbl" for="st-avg-reach">平均リーチ（手入力）</label>
-        <input type="number" id="st-avg-reach" placeholder="0" min="0">
       </div>
       <div class="fg">
         <label class="lbl">平均閲覧数 <span>（自動計算）</span></label>
@@ -810,9 +806,9 @@ function calcMetrics(){
   const rlCount    = int('rl-count');
 
   const hasEngagement = rlMaxLikes > 0 || rlMaxComments > 0 || rlMaxShares > 0 || rlMaxSaves > 0;
-  const er  = (rlMaxReach > 0 && hasEngagement)
+  const er  = (rlCount > 0 && rlMaxReach > 0 && hasEngagement)
     ? ((rlMaxLikes + rlMaxComments + rlMaxShares + rlMaxSaves) / rlMaxReach) * 100 : NaN;
-  const sv  = rlMaxReach > 0 ? (rlMaxSaves / rlMaxReach) * 100 : NaN;
+  const sv  = (rlCount > 0 && rlMaxReach > 0) ? (rlMaxSaves / rlMaxReach) * 100 : NaN;
   const rlAvgViews = rlCount === 1 && rlMaxViews > 0
     ? rlMaxViews
     : (rlCount >= 2 && rlMaxViews > 0 && rlMinViews > 0)
@@ -1151,7 +1147,7 @@ function buildClaudePrompt(){
     `30日間投稿本数：${postCnt > 0 ? postCnt+'本' : '—'}`,
     '',
     '■ ストーリーズ',
-    `平均閲覧数：${stAvgV > 0 ? stAvgV.toLocaleString('ja-JP') : '—'}（${stCnt}本） / 平均リーチ：${v(int('st-avg-reach'))} / 離脱率：${num('st-exit-rate') > 0 ? num('st-exit-rate')+'%' : '—'}`,
+    `平均閲覧数：${stAvgV > 0 ? stAvgV.toLocaleString('ja-JP') : '—'}（${stCnt}本） / リーチ（全体合計）：${m.reach > 0 ? m.reach.toLocaleString('ja-JP') : '—'} / 離脱率：${num('st-exit-rate') > 0 ? num('st-exit-rate')+'%' : '—'}`,
     '',
     '■ オーディエンス',
     `性別：女性${num('aud-female')||0}% / 男性${num('aud-male')||0}%`,
