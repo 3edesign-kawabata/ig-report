@@ -957,23 +957,25 @@ function buildReport(){
   const postMaxV = int('post-max-views'), postMaxR = int('post-max-reach');
   const postMaxL = int('post-max-likes'), postMaxC = int('post-max-comments');
   const postMaxSh = int('post-max-shares'), postMaxS = int('post-max-saves');
-  const postMinV = int('post-min-views'), postCnt = int('post-count');
-  if(postMaxV > 0 || postMaxR > 0){
+  const postMinV = int('post-min-views'), postMinR = int('post-min-reach'), postCnt = int('post-count');
+  if(postMaxV > 0 || postMaxR > 0 || postCnt > 0){
     const postER = postMaxR > 0 ? pct((postMaxL + postMaxC + postMaxSh + postMaxS) / postMaxR * 100) : '—';
     html += subHead('投稿（フィード）');
-    html += `<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:9px;padding:12px 14px;margin-bottom:8px">
-      <div style="font-size:11px;color:var(--sub);margin-bottom:7px">最多閲覧数の投稿</div>
-      ${statGrid(4,[['閲覧数',fmt(postMaxV)],['リーチ',fmt(postMaxR)],['いいね',fmt(postMaxL)],['コメント',fmt(postMaxC)],['シェア',fmt(postMaxSh)],['保存',fmt(postMaxS)],['ER',postER,'var(--ig-blue)']])}
-    </div>`;
+    if(postMaxV > 0 || postMaxR > 0){
+      html += `<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:9px;padding:12px 14px;margin-bottom:8px">
+        <div style="font-size:11px;color:var(--sub);margin-bottom:7px">最多閲覧数の投稿</div>
+        ${statGrid(4,[['閲覧数',fmt(postMaxV)],['リーチ',fmt(postMaxR)],['いいね',fmt(postMaxL)],['コメント',fmt(postMaxC)],['シェア',fmt(postMaxSh)],['保存',fmt(postMaxS)],['ER',postER,'var(--ig-blue)']])}
+      </div>`;
+    }
     if(postMinV > 0){
       html += `<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:9px;padding:12px 14px;margin-bottom:8px">
         <div style="font-size:11px;color:var(--sub);margin-bottom:7px">最少閲覧数の投稿</div>
-        ${statGrid(1,[['閲覧数',fmt(postMinV)]])}
+        ${statGrid(2,[['閲覧数',fmt(postMinV)],['リーチ',fmt(postMinR)]])}
       </div>`;
     }
     html += `<div style="font-size:13px;display:flex;gap:20px;flex-wrap:wrap;margin-bottom:4px">
       <span><span style="color:var(--sub)">30日間本数：</span><strong>${postCnt>0?postCnt+'本':'—'}</strong></span>
-      <span><span style="color:var(--sub)">参考ER：</span><strong style="color:var(--ig-blue)">${postER}</strong></span>
+      ${(postMaxV > 0 || postMaxR > 0) ? `<span><span style="color:var(--sub)">参考ER：</span><strong style="color:var(--ig-blue)">${postER}</strong></span>` : ''}
     </div>`;
   }
 
