@@ -455,7 +455,7 @@ textarea:focus{outline:none;border-color:var(--blue)}
       </div>
     </div>
 
-    <div class="g3">
+    <div class="g4">
       <div class="fg">
         <label class="lbl" for="rl-count">30日間の投稿本数</label>
         <input type="number" id="rl-count" placeholder="0" min="0" oninput="calcReelAuto()">
@@ -467,6 +467,10 @@ textarea:focus{outline:none;border-color:var(--blue)}
       <div class="fg">
         <label class="lbl">平均ER <span>（自動計算）</span></label>
         <input type="text" id="rl-avg-er" class="calc-field" readonly placeholder="—">
+      </div>
+      <div class="fg">
+        <label class="lbl" for="rl-avg-watch">平均視聴時間 <span>（秒）</span></label>
+        <input type="number" id="rl-avg-watch" placeholder="0" min="0" step="0.1">
       </div>
     </div>
   </div>
@@ -495,8 +499,9 @@ textarea:focus{outline:none;border-color:var(--blue)}
         <div class="reel-num gray">↓</div>
         <span style="font-size:13px;font-weight:700">最少閲覧数の投稿</span>
       </div>
-      <div class="g2" style="max-width:320px">
+      <div class="g2">
         <div class="fg"><label class="lbl" for="post-min-views">閲覧数</label><input type="number" id="post-min-views" placeholder="0" min="0"></div>
+        <div class="fg"><label class="lbl" for="post-min-reach">リーチ</label><input type="number" id="post-min-reach" placeholder="0" min="0"></div>
       </div>
     </div>
 
@@ -510,14 +515,22 @@ textarea:focus{outline:none;border-color:var(--blue)}
   <div class="sec">
     <div class="sec-ttl">ストーリーズ</div>
     <div class="hint" style="margin-bottom:10px">平均閲覧数は概要タブの「ストーリーズ 閲覧数」÷ 投稿本数で自動計算されます</div>
-    <div class="g2" style="max-width:400px">
+    <div class="g4">
       <div class="fg">
         <label class="lbl" for="st-count">30日間の投稿本数</label>
         <input type="number" id="st-count" placeholder="0" min="0" oninput="calcStoryAuto()">
       </div>
       <div class="fg">
+        <label class="lbl" for="st-avg-reach">平均リーチ（手入力）</label>
+        <input type="number" id="st-avg-reach" placeholder="0" min="0">
+      </div>
+      <div class="fg">
         <label class="lbl">平均閲覧数 <span>（自動計算）</span></label>
         <input type="text" id="st-avg-views-calc" class="calc-field" readonly placeholder="—">
+      </div>
+      <div class="fg">
+        <label class="lbl" for="st-exit-rate">離脱率 <span>(%)</span></label>
+        <input type="number" id="st-exit-rate" placeholder="0" min="0" max="100" step="0.1">
       </div>
     </div>
   </div>
@@ -1131,14 +1144,14 @@ function buildClaudePrompt(){
     '',
     '■ リール動画',
     `最多閲覧数：${v(m.rlMaxViews)} / 最少：${rlCnt >= 2 ? v(m.rlMinViews) : '—'} / 平均：${!isNaN(m.rlAvgViews) ? m.rlAvgViews.toLocaleString('ja-JP') : '—'}`,
-    `30日間投稿本数：${rlCnt > 0 ? rlCnt+'本' : '—'}`,
+    `30日間投稿本数：${rlCnt > 0 ? rlCnt+'本' : '—'} / 平均視聴時間：${num('rl-avg-watch') > 0 ? num('rl-avg-watch')+'秒' : '—'}`,
     '',
     '■ 投稿（フィード）',
-    `最多閲覧数：${v(int('post-max-views'))} / 最少：${postCnt >= 2 && postMinV > 0 ? postMinV.toLocaleString('ja-JP') : '—'}`,
+    `最多閲覧数：${v(int('post-max-views'))} / 最少閲覧数：${postCnt >= 2 && postMinV > 0 ? postMinV.toLocaleString('ja-JP') : '—'} / 最少リーチ：${v(int('post-min-reach'))}`,
     `30日間投稿本数：${postCnt > 0 ? postCnt+'本' : '—'}`,
     '',
     '■ ストーリーズ',
-    `平均閲覧数：${stAvgV > 0 ? stAvgV.toLocaleString('ja-JP') : '—'}（${stCnt}本）`,
+    `平均閲覧数：${stAvgV > 0 ? stAvgV.toLocaleString('ja-JP') : '—'}（${stCnt}本） / 平均リーチ：${v(int('st-avg-reach'))} / 離脱率：${num('st-exit-rate') > 0 ? num('st-exit-rate')+'%' : '—'}`,
     '',
     '■ オーディエンス',
     `性別：女性${num('aud-female')||0}% / 男性${num('aud-male')||0}%`,
